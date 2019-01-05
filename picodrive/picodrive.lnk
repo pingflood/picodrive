@@ -1,0 +1,8 @@
+title=PicoDrive
+description=MegaDrive/Genesis Emulator
+exec=/home/retrofw/emus/picodrive/picodrive.dge
+ipu_mode=1
+selectorbrowser=true
+selectordir=/home/retrofw/roms/nes
+selectorfilter=.zip,.smd,.iso
+clock=600
