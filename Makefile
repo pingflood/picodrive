@@ -53,6 +53,17 @@ endif
 -include Makefile.local
 
 ifeq "$(PLATFORM)" "opendingux"
+
+ipk: all
+	@rm -rf /tmp/.picodrive-ipk/ && mkdir -p /tmp/.picodrive-ipk/root/home/retrofw/emus/picodrive /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
+	@cp -r picodrive/skin picodrive/picodrive.dge picodrive/picodrive.png /tmp/.picodrive-ipk/root/home/retrofw/emus/picodrive
+	@cp picodrive/picodrive.lnk /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
+	@sed "s/^Version:.*/Version: $$(date +%Y%m%d)/" picodrive/control > /tmp/.picodrive-ipk/control
+	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/control.tar.gz -C /tmp/.picodrive-ipk/ control
+	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/data.tar.gz -C /tmp/.picodrive-ipk/root/ .
+	@echo 2.0 > /tmp/.picodrive-ipk/debian-binary
+	@ar r picodrive/picodrive.ipk /tmp/.picodrive-ipk/control.tar.gz /tmp/.picodrive-ipk/data.tar.gz /tmp/.picodrive-ipk/debian-binary
+
 opk: $(TARGET).opk
 
 $(TARGET).opk: $(TARGET)
