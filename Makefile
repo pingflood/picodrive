@@ -55,9 +55,10 @@ endif
 ifeq "$(PLATFORM)" "opendingux"
 
 ipk: all
-	@rm -rf /tmp/.picodrive-ipk/ && mkdir -p /tmp/.picodrive-ipk/root/home/retrofw/emus/picodrive /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
+	@rm -rf /tmp/.picodrive-ipk/ && mkdir -p /tmp/.picodrive-ipk/root/home/retrofw/emus/picodrive /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/systems
 	@cp -r picodrive/skin picodrive/picodrive.dge picodrive/picodrive.png /tmp/.picodrive-ipk/root/home/retrofw/emus/picodrive
 	@cp picodrive/picodrive.lnk /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
+	@cp picodrive/megadrive.picodrive.lnk /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/systems
 	@sed "s/^Version:.*/Version: $$(date +%Y%m%d)/" picodrive/control > /tmp/.picodrive-ipk/control
 	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/control.tar.gz -C /tmp/.picodrive-ipk/ control
 	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/data.tar.gz -C /tmp/.picodrive-ipk/root/ .
