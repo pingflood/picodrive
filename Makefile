@@ -200,7 +200,7 @@ target_: $(TARGET)
 
 clean:
 	$(RM) $(TARGET) $(OBJS)
-	$(RM) -r .opk_data
+	$(RM) -r .opk_data picodrive/picodrive.ipk
 
 $(TARGET): $(OBJS)
 ifeq ($(STATIC_LINKING), 1)
