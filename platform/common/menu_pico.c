@@ -720,7 +720,7 @@ static const char h_confirm_save[]    = "Ask for confirmation when overwriting s
 
 static menu_entry e_menu_options[] =
 {
-	mee_range     ("Save slot",                MA_OPT_SAVE_SLOT,     state_slot, 0, 9),
+	// mee_range     ("Save slot",                MA_OPT_SAVE_SLOT,     state_slot, 0, 9),
 	mee_range_cust("Frameskip",                MA_OPT_FRAMESKIP,     currentConfig.Frameskip, -1, 16, mgn_opt_fskip),
 	mee_cust      ("Region",                   MA_OPT_REGION,        mh_opt_misc, mgn_opt_region),
 	mee_onoff     ("Show FPS",                 MA_OPT_SHOW_FPS,      currentConfig.EmuOpt, EOPT_SHOW_FPS),
@@ -728,16 +728,18 @@ static menu_entry e_menu_options[] =
 	mee_cust      ("Sound Quality",            MA_OPT_SOUND_QUALITY, mh_opt_misc, mgn_opt_sound),
 	mee_enum_h    ("Confirm savestate",        MA_OPT_CONFIRM_STATES,currentConfig.confirm_save, men_confirm_save, h_confirm_save),
 	mee_range     ("",                         MA_OPT_CPU_CLOCKS,    currentConfig.CPUclock, 20, 3200),
-	mee_handler   ("[Display options]",        menu_loop_gfx_options),
-	mee_handler   ("[Sega/Mega CD options]",   menu_loop_cd_options),
+	mee_handler   ("[Controls]",                      menu_loop_keyconfig),
+	mee_handler   ("[Display]",        menu_loop_gfx_options),
+	mee_handler   ("[Sega/Mega CD]",   menu_loop_cd_options),
 #ifndef NO_32X
-	mee_handler   ("[32X options]",            menu_loop_32x_options),
+	mee_handler   ("[32X]",            menu_loop_32x_options),
 #endif
 	mee_handler   ("[Advanced options]",       menu_loop_adv_options),
 	mee_cust_nosave("Save global config",      MA_OPT_SAVECFG, mh_saveloadcfg, mgn_saveloadcfg),
 	mee_cust_nosave("Save cfg for loaded game",MA_OPT_SAVECFG_GAME, mh_saveloadcfg, mgn_saveloadcfg),
 	mee_cust_nosave("Load cfg from profile",   MA_OPT_LOADCFG, mh_saveloadcfg, mgn_saveloadcfg),
 	mee_handler   ("Restore defaults",         mh_restore_defaults),
+	mee_handler_id("Credits",            MA_MAIN_CREDITS,     main_menu_handler),
 	mee_end,
 };
 
@@ -1069,16 +1071,16 @@ static menu_entry e_menu_main[] =
 	mee_label     (""),
 	mee_label     (""),
 	mee_label     (""),
-	mee_handler_id("Resume game",        MA_MAIN_RESUME_GAME, main_menu_handler),
-	mee_handler_id("Save State",         MA_MAIN_SAVE_STATE,  main_menu_handler),
-	mee_handler_id("Load State",         MA_MAIN_LOAD_STATE,  main_menu_handler),
-	mee_handler_id("Reset game",         MA_MAIN_RESET_GAME,  main_menu_handler),
-	mee_handler_id("Load new ROM/ISO",   MA_MAIN_LOAD_ROM,    main_menu_handler),
+	// mee_handler_id("Resume game",        MA_MAIN_RESUME_GAME, main_menu_handler),
+	mee_handler_id("Load state",         MA_MAIN_LOAD_STATE,  main_menu_handler),
+	mee_handler_id("Save state",         MA_MAIN_SAVE_STATE,  main_menu_handler),
+	// mee_handler_id("Load new ROM/ISO",   MA_MAIN_LOAD_ROM,    main_menu_handler),
 	mee_handler_id("Change CD/ISO",      MA_MAIN_CHANGE_CD,   main_menu_handler),
-	mee_handler   ("Change options",                          menu_loop_options),
-	mee_handler   ("Configure controls",                      menu_loop_keyconfig),
+	mee_handler   ("Settings",                                menu_loop_options),
+	// mee_handler   ("Configure controls",                      menu_loop_keyconfig),
 	mee_handler_id("Credits",            MA_MAIN_CREDITS,     main_menu_handler),
 	mee_handler_id("Patches / GameGenie",MA_MAIN_PATCHES,     main_menu_handler),
+	mee_handler_id("Reset",         MA_MAIN_RESET_GAME,  main_menu_handler),
 	mee_handler_id("Exit",               MA_MAIN_EXIT,        main_menu_handler),
 	mee_end,
 };
