@@ -60,6 +60,7 @@ ipk: all
 	@cp picodrive/picodrive.lnk /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
 	@cp picodrive/megadrive.picodrive.lnk /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/systems
 	@sed "s/^Version:.*/Version: $$(date +%Y%m%d)/" picodrive/control > /tmp/.picodrive-ipk/control
+	@cp picodrive/conffiles /tmp/.picodrive-ipk/
 	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/control.tar.gz -C /tmp/.picodrive-ipk/ control
 	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/data.tar.gz -C /tmp/.picodrive-ipk/root/ .
 	@echo 2.0 > /tmp/.picodrive-ipk/debian-binary
