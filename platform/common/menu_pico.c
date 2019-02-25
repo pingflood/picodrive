@@ -209,8 +209,8 @@ void menu_romload_prepare(const char *rom_name)
 	/* fill all buffers, callbacks won't update in full */
 	for (i = 0; i < 3; i++) {
 		menu_draw_begin(1, 1);
-		smalltext_out16(1, 1, "Loading", 0xffff);
-		smalltext_out16(1, me_sfont_h, p, 0xffff);
+		smalltext_out16(1, 32, "Loading", 0xffff);
+		smalltext_out16(1, 34 + me_sfont_h, p, 0xffff);
 		menu_draw_end();
 	}
 

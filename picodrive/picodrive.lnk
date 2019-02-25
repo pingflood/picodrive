@@ -2,5 +2,5 @@ title=PicoDrive
 description=MegaDrive/Genesis Emulator
 exec=/home/retrofw/emus/picodrive/picodrive.dge
 selectordir=/home/retrofw/roms/megadrive
-selectorfilter=.zip,.smd,.iso,.bin,.md,.gen,.sms,.gg,.sg
+selectorfilter=.zip,.smd,.iso,.cue,.bin,.md,.gen,.sms,.gg,.sg
 clock=600

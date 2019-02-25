@@ -55,13 +55,13 @@ endif
 ifeq "$(PLATFORM)" "opendingux"
 
 ipk: all
-	@rm -rf /tmp/.picodrive-ipk/ && mkdir -p /tmp/.picodrive-ipk/root/home/retrofw/emus/picodrive /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/systems
+	@rm -rf /tmp/.picodrive-ipk/ && mkdir -p /tmp/.picodrive-ipk/root/home/retrofw/emus/picodrive /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators.systems
 	@cp -r picodrive/skin picodrive/picodrive.dge picodrive/picodrive.png /tmp/.picodrive-ipk/root/home/retrofw/emus/picodrive
 	@cp picodrive/picodrive.lnk /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
-	@cp picodrive/megadrive.picodrive.lnk /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/systems
+	@cp picodrive/megadrive.picodrive.lnk picodrive/segacd.picodrive.lnk picodrive/gamegear.picodrive.lnk picodrive/mastersystem.picodrive.lnk /tmp/.picodrive-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators.systems
 	@sed "s/^Version:.*/Version: $$(date +%Y%m%d)/" picodrive/control > /tmp/.picodrive-ipk/control
 	@cp picodrive/conffiles /tmp/.picodrive-ipk/
-	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/control.tar.gz -C /tmp/.picodrive-ipk/ control
+	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/control.tar.gz -C /tmp/.picodrive-ipk/ control conffiles
 	@tar --owner=0 --group=0 -czvf /tmp/.picodrive-ipk/data.tar.gz -C /tmp/.picodrive-ipk/root/ .
 	@echo 2.0 > /tmp/.picodrive-ipk/debian-binary
 	@ar r picodrive/picodrive.ipk /tmp/.picodrive-ipk/control.tar.gz /tmp/.picodrive-ipk/data.tar.gz /tmp/.picodrive-ipk/debian-binary
