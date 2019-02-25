@@ -1417,6 +1417,10 @@ void emu_loop(void)
 				int sum = noticeMsg[0] + noticeMsg[1] + noticeMsg[2];
 				if (sum != noticeMsgSum) {
 					plat_status_msg_clear();
+					plat_video_flip();
+					plat_status_msg_clear(); /* Do it again in case of double buffering */
+					plat_video_flip();
+					plat_status_msg_clear(); /* Do it again in case of triple buffering */
 					noticeMsgSum = sum;
 				}
 				notice_msg = noticeMsg;
