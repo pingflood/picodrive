@@ -221,6 +221,7 @@ void plat_video_menu_end(void)
 
 void plat_video_menu_leave(void)
 {
+	plat_sdl_change_video_mode(g_screen_width, g_screen_height, 0);
 }
 
 void plat_video_loop_prepare(void)

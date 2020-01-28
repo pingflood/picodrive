@@ -29,6 +29,14 @@
  */
 
 #include "pico_int.h"
+#include <SDL/SDL.h>
+
+extern SDL_Surface *plat_sdl_screen;
+extern int g_screen_width;
+extern int g_screen_height;
+extern int g_screen_ppitch;
+extern int engineState;
+extern void plat_video_loop_prepare();
 
 int (*PicoScanBegin)(unsigned int num) = NULL;
 int (*PicoScanEnd)  (unsigned int num) = NULL;
@@ -1421,22 +1429,22 @@ void FinalizeLine555(int sh, int line, struct PicoEState *est)
   unsigned short *pd=est->DrawLineDest;
   unsigned char  *ps=est->HighCol+8;
   unsigned short *pal=est->HighPal;
-  int len;
 
   PicoDrawUpdateHighPal();
 
-  if (Pico.video.reg[12]&1) {
-    len = 320;
-  } else {
-    if (!(PicoIn.opt&POPT_DIS_32C_BORDER)) pd+=32;
-    len = 256;
+  g_screen_width = (Pico.video.reg[12] & 1) ? 320 : 256;
+  g_screen_height = (Pico.video.reg[1] & 8) ? 240 : 224;
+  g_screen_ppitch = g_screen_width;
+
+  if ((plat_sdl_screen->w != g_screen_width || plat_sdl_screen->h != g_screen_height) && engineState == 2) {
+    plat_video_loop_prepare();
   }
 
   {
 #if 1
     int i;
-
-    for (i = len; i > 0; i-=4) {
+    // pd += (plat_sdl_screen->h - g_screen_height) * 2;
+    for (i = g_screen_width; i > 0; i-=4) {
       *pd++ = pal[*ps++];
       *pd++ = pal[*ps++];
       *pd++ = pal[*ps++];
@@ -1616,7 +1624,7 @@ static int DrawDisplay(int sh)
 // MUST be called every frame
 PICO_INTERNAL void PicoFrameStart(void)
 {
-  int offs = 8, lines = 224;
+  int offs = 0, lines = 224; // offs = 8 if no harwdare scaling
   int dirty = ((Pico.est.rendstatus & PDRAW_SONIC_MODE) || Pico.m.dirtyPal);
 
   // prepare to do this frame
