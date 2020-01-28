@@ -201,13 +201,12 @@ static void cdload_progress_cb(const char *fname, int percent)
 void menu_romload_prepare(const char *rom_name)
 {
 	const char *p = rom_name + strlen(rom_name);
-	int i;
 
 	while (p > rom_name && *p != '/')
 		p--;
 
 	/* fill all buffers, callbacks won't update in full */
-	for (i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++) {
 		menu_draw_begin(1, 1);
 		smalltext_out16(1, 1, "Loading", 0xffff);
 		smalltext_out16(1, me_sfont_h, p, 0xffff);
@@ -224,10 +223,12 @@ void menu_romload_end(void)
 	PicoCartLoadProgressCB = NULL;
 	PicoCDLoadProgressCB = NULL;
 
-	menu_draw_begin(0, 1);
-	smalltext_out16(1, (cdload_called ? 6 : 3) * me_sfont_h,
-		"Starting emulation...", 0xffff);
-	menu_draw_end();
+	for (int i = 0; i < 3; i++) {
+		menu_draw_begin(0, 1);
+		smalltext_out16(1, (cdload_called ? 6 : 3) * me_sfont_h,
+			"Starting emulation...", 0xffff);
+		menu_draw_end();
+	}
 }
 
 // ------------ patch/gg menu ------------
