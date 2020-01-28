@@ -105,5 +105,6 @@ void menu_loop(void);
 int menu_loop_tray(void);
 void menu_romload_prepare(const char *rom_name);
 void menu_romload_end(void);
+static int main_menu_handler(int id, int keys);
 
 #endif // __MENU_PICO_H__
