@@ -1412,16 +1412,20 @@ void emu_loop(void)
 			{
 				notice_msg_time = 0;
 				plat_status_msg_clear();
-#ifndef __GP2X__
 				plat_video_flip();
 				plat_status_msg_clear(); /* Do it again in case of double buffering */
-#endif
+				plat_video_flip();
+				plat_status_msg_clear(); /* Do it again in case of triple buffering */
 				notice_msg = NULL;
 			}
 			else {
 				int sum = noticeMsg[0] + noticeMsg[1] + noticeMsg[2];
 				if (sum != noticeMsgSum) {
 					plat_status_msg_clear();
+					plat_video_flip();
+					plat_status_msg_clear(); /* Do it again in case of double buffering */
+					plat_video_flip();
+					plat_status_msg_clear(); /* Do it again in case of triple buffering */
 					noticeMsgSum = sum;
 				}
 				notice_msg = noticeMsg;
