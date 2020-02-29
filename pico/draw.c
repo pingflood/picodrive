@@ -108,7 +108,7 @@ void blockcpy_or(void *dst, void *src, size_t n, int pat)
 #define blockcpy memcpy
 #endif
 
-#define TileNormMaker_(pix_func)                             \
+#define TileNormMaker_(pix_func,ret)                         \
 {                                                            \
   unsigned int t;                                            \
                                                              \
@@ -120,9 +120,10 @@ void blockcpy_or(void *dst, void *src, size_t n, int pat)
   t = (pack&0x0f000000)>>24; pix_func(5);                    \
   t = (pack&0x00f00000)>>20; pix_func(6);                    \
   t = (pack&0x000f0000)>>16; pix_func(7);                    \
+  return ret;                                                \
 }
 
-#define TileFlipMaker_(pix_func)                             \
+#define TileFlipMaker_(pix_func,ret)                         \
 {                                                            \
   unsigned int t;                                            \
                                                              \
@@ -134,23 +135,24 @@ void blockcpy_or(void *dst, void *src, size_t n, int pat)
   t = (pack&0x000000f0)>> 4; pix_func(5);                    \
   t = (pack&0x00000f00)>> 8; pix_func(6);                    \
   t = (pack&0x0000f000)>>12; pix_func(7);                    \
+  return ret;                                                \
 }
 
 #define TileNormMaker(funcname, pix_func) \
 static void funcname(unsigned char *pd, unsigned int pack, int pal) \
-TileNormMaker_(pix_func)
+TileNormMaker_(pix_func,)
 
 #define TileFlipMaker(funcname, pix_func) \
 static void funcname(unsigned char *pd, unsigned int pack, int pal) \
-TileFlipMaker_(pix_func)
+TileFlipMaker_(pix_func,)
 
 #define TileNormMakerAS(funcname, pix_func) \
-static void funcname(unsigned char *pd, unsigned char *mb, unsigned int pack, int pal) \
-TileNormMaker_(pix_func)
+static unsigned funcname(unsigned char *pd, unsigned m, unsigned int pack, int pal) \
+TileNormMaker_(pix_func,m)
 
 #define TileFlipMakerAS(funcname, pix_func) \
-static void funcname(unsigned char *pd, unsigned char *mb, unsigned int pack, int pal) \
-TileFlipMaker_(pix_func)
+static unsigned funcname(unsigned char *pd, unsigned m, unsigned int pack, int pal) \
+TileFlipMaker_(pix_func,m)
 
 #define pix_just_write(x) \
   if (t) pd[x]=pal|t
@@ -192,17 +194,19 @@ TileFlipMaker(TileFlipSH_onlyop_lp, pix_sh_onlyop)
 
 #endif
 
+// AS: sprite mask bits in m shifted to bits 8-15, see DrawSpritesHiAS
+
 // draw a sprite pixel (AS)
 #define pix_as(x) \
-  if (t & mb[x]) mb[x] = 0, pd[x] = pal | t
+  if (t && (m & (1<<(x+8)))) m &= ~(1<<(x+8)), pd[x] = pal | t
 
 TileNormMakerAS(TileNormAS, pix_as)
 TileFlipMakerAS(TileFlipAS, pix_as)
 
 // draw a sprite pixel, process operator colors (AS)
 #define pix_sh_as(x) \
-  if (t & mb[x]) { \
-    mb[x] = 0; \
+  if (t && (m & (1<<(x+8)))) { \
+    m &= ~(1<<(x+8)); \
     if (t>=0xe) pd[x]=(pd[x]&0x3f)|(t<<6); /* c0 shadow, 80 hilight */ \
     else pd[x] = pal | t; \
   }
@@ -211,8 +215,8 @@ TileNormMakerAS(TileNormSH_AS, pix_sh_as)
 TileFlipMakerAS(TileFlipSH_AS, pix_sh_as)
 
 #define pix_sh_as_onlyop(x) \
-  if (t & mb[x]) { \
-    mb[x] = 0; \
+  if (t && (m & (1<<(x+8)))) { \
+    m &= ~(1<<(x+8)); \
     pix_sh_onlyop(x); \
   }
 
@@ -221,7 +225,7 @@ TileFlipMakerAS(TileFlipSH_AS_onlyop_lp, pix_sh_as_onlyop)
 
 // mark pixel as sprite pixel (AS)
 #define pix_sh_as_onlymark(x) \
-  if (t) mb[x] = 0
+  if (t) m &= ~(1<<(x+8))
 
 TileNormMakerAS(TileNormAS_onlymark, pix_sh_as_onlymark)
 TileFlipMakerAS(TileFlipAS_onlymark, pix_sh_as_onlymark)
@@ -913,6 +917,10 @@ static NOINLINE void DrawAllSpritesInterlace(int pri, int sh)
  */
 static void DrawSpritesSHi(unsigned char *sprited, const struct PicoEState *est)
 {
+  static void (*tilefuncs[2][2][2])(unsigned char *, unsigned, int) = {
+    { {NULL,                 NULL},                 {TileNorm,   TileFlip} },
+    { {TileNormSH_onlyop_lp, TileFlipSH_onlyop_lp}, {TileNormSH, TileFlipSH} }
+  }; // [sh?][hi?][flip?]
   void (*fTileFunc)(unsigned char *pd, unsigned int pack, int pal);
   unsigned char *pd = Pico.est.HighCol;
   unsigned char *p;
@@ -937,21 +945,8 @@ static void DrawSpritesSHi(unsigned char *sprited, const struct PicoEState *est)
     code = sprite[1];
     pal = (code>>9)&0x30;
 
-    if (pal == 0x30)
-    {
-      if (code & 0x8000) // hi priority
-      {
-        if (code&0x800) fTileFunc=TileFlipSH;
-        else            fTileFunc=TileNormSH;
-      } else {
-        if (code&0x800) fTileFunc=TileFlipSH_onlyop_lp;
-        else            fTileFunc=TileNormSH_onlyop_lp;
-      }
-    } else {
-      if (!(code & 0x8000)) continue; // non-operator low sprite, already drawn
-      if (code&0x800) fTileFunc=TileFlip;
-      else            fTileFunc=TileNorm;
-    }
+    fTileFunc = tilefuncs[pal == 0x30][!!(code & 0x8000)][!!(code & 0x800)];
+    if (fTileFunc == NULL) continue; // non-operator low sprite, already drawn
 
     // parse remaining sprite data
     sy=sprite[0];
@@ -988,11 +983,15 @@ static void DrawSpritesSHi(unsigned char *sprited, const struct PicoEState *est)
 
 static void DrawSpritesHiAS(unsigned char *sprited, int sh)
 {
-  void (*fTileFunc)(unsigned char *pd, unsigned char *mb,
-                    unsigned int pack, int pal);
+  static unsigned (*tilefuncs[2][2][2])(unsigned char *, unsigned, unsigned, int) = {
+    { {TileNormAS_onlymark,     TileFlipAS_onlymark},     {TileNormAS,    TileFlipAS} },
+    { {TileNormSH_AS_onlyop_lp, TileFlipSH_AS_onlyop_lp}, {TileNormSH_AS, TileFlipSH_AS} }
+  }; // [sh?][hi?][flip?]
+  unsigned (*fTileFunc)(unsigned char *pd, unsigned m, unsigned int pack, int pal);
   unsigned char *pd = Pico.est.HighCol;
-  unsigned char mb[8+320+8];
-  unsigned char *p;
+  unsigned char mb[1+320/8+1];
+  unsigned char *p, *mp;
+  unsigned m;
   int entry, cnt;
 
   cnt = sprited[0] & 0x7f;
@@ -1014,26 +1013,7 @@ static void DrawSpritesHiAS(unsigned char *sprited, int sh)
     code = sprite[1];
     pal = (code>>9)&0x30;
 
-    if (sh && pal == 0x30)
-    {
-      if (code & 0x8000) // hi priority
-      {
-        if (code&0x800) fTileFunc = TileFlipSH_AS;
-        else            fTileFunc = TileNormSH_AS;
-      } else {
-        if (code&0x800) fTileFunc = TileFlipSH_AS_onlyop_lp;
-        else            fTileFunc = TileNormSH_AS_onlyop_lp;
-      }
-    } else {
-      if (code & 0x8000) // hi priority
-      {
-        if (code&0x800) fTileFunc = TileFlipAS;
-        else            fTileFunc = TileNormAS;
-      } else {
-        if (code&0x800) fTileFunc = TileFlipAS_onlymark;
-        else            fTileFunc = TileNormAS_onlymark;
-      }
-    }
+    fTileFunc = tilefuncs[(sh && pal == 0x30)][!!(code&0x8000)][!!(code&0x800)];
 
     // parse remaining sprite data
     sy=sprite[0];
@@ -1062,8 +1042,12 @@ static void DrawSpritesHiAS(unsigned char *sprited, int sh)
       if(sx>=328) break; // Offscreen
 
       pack = *(unsigned int *)(PicoMem.vram + (tile & 0x7fff));
-      fTileFunc(pd + sx, mb + sx, pack, pal);
-    }
+
+      m = (m >> 8) | mp[1] << 8; // next mask byte
+      // shift mask bits to bits 8-15 for easier load/store handling
+      m = fTileFunc(pd + sx, m << (8-(sx&0x7)), pack, pal) >> (8-(sx&0x7));
+    } 
+    *mp = m >> 8; // write last mask byte
   }
 }
 
@@ -1114,7 +1098,8 @@ static void DrawSpritesForced(unsigned char *sprited)
     delta<<=4; // Delta of address
 
     if (entry+1 == cnt) width = p[entry+1]; // last sprite width limited?
-    for (; width; width--,sx+=8,tile+=delta)
+    mp = mb+(sx>>3);
+    for (m = *mp << 8; width; width--, sx+=8, *mp++ = m, tile+=delta)
     {
       unsigned int pack;
 
