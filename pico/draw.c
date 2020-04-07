@@ -1609,7 +1609,6 @@ static int DrawDisplay(int sh)
   int win=0, edge=0, hvwind=0, lflags;
   int maxw, maxcells;
 
-  est->rendstatus &= ~(PDRAW_SPRITES_MOVED|PDRAW_DIRTY_SPRITES);
   est->rendstatus &= ~(PDRAW_SHHI_DONE|PDRAW_PLANE_HI_PRIO);
 
   if (pvid->reg[12]&1) {
@@ -1721,6 +1720,7 @@ PICO_INTERNAL void PicoFrameStart(void)
 {
   int offs = 0, lines = 224; // offs = 8 if no harwdare scaling
   int dirty = ((Pico.est.rendstatus & PDRAW_SONIC_MODE) || Pico.m.dirtyPal);
+  int sprep = Pico.est.rendstatus & (PDRAW_SPRITES_MOVED|PDRAW_DIRTY_SPRITES);
 
   // prepare to do this frame
   Pico.est.rendstatus = 0;
@@ -1740,6 +1740,8 @@ PICO_INTERNAL void PicoFrameStart(void)
       lines, (Pico.video.reg[12] & 1) ? 0 : 1);
     rendstatus_old = Pico.est.rendstatus;
   }
+  if (sprep)
+    Pico.est.rendstatus |= PDRAW_PARSE_SPRITES;
 
   Pico.est.HighCol = HighColBase + offs * HighColIncrement;
   Pico.est.DrawLineDest = (char *)DrawLineDestBase + offs * DrawLineDestIncrement;
@@ -1812,6 +1814,7 @@ static void PicoLine(int line, int offs, int sh, int bgc)
 
 void PicoDrawSync(int to, int blank_last_line)
 {
+  struct PicoEState *est = &Pico.est;
   int line, offs = 0;
   int sh = (Pico.video.reg[0xC] & 8) >> 3; // shadow/hilight?
   int bgc = Pico.video.reg[7];
@@ -1823,10 +1826,11 @@ void PicoDrawSync(int to, int blank_last_line)
     if (to > 223)
       to = 223;
   }
-  if (Pico.est.DrawScanline <= to - blank_last_line)
+  if (est->DrawScanline <= to - blank_last_line && (est->rendstatus &
+                (PDRAW_SPRITES_MOVED|PDRAW_DIRTY_SPRITES|PDRAW_PARSE_SPRITES)))
     PrepareSprites(to - blank_last_line + 1);
 
-  for (line = Pico.est.DrawScanline; line < to; line++)
+  for (line = est->DrawScanline; line < to; line++)
     PicoLine(line, offs, sh, bgc);
 
   // last line
@@ -1837,7 +1841,7 @@ void PicoDrawSync(int to, int blank_last_line)
     else PicoLine(line, offs, sh, bgc);
     line++;
   }
-  Pico.est.DrawScanline = line;
+  est->DrawScanline = line;
 
   pprof_end(draw);
 }
