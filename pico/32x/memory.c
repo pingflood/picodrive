@@ -114,12 +114,13 @@ void p32x_m68k_poll_event(u32 flags)
 void NOINLINE p32x_sh2_poll_detect(u32 a, SH2 *sh2, u32 flags, int maxcnt)
 {
   u32 cycles_done = sh2_cycles_done_t(sh2);
+  u32 cycles_diff = cycles_done - sh2->poll_cycles;
 
   // reading 2 consecutive 16bit values is probably a 32bit access. detect this
   // by checking address (max 2 bytes away) and cycles (max 2 cycles later).
   // no polling if more than 20 cycles have passed since last detect call.
-  if (a - sh2->poll_addr <= 2 && CYCLES_GE(sh2->poll_cycles+20, cycles_done)) {
-    if (CYCLES_GT(cycles_done,sh2->poll_cycles+2) && ++sh2->poll_cnt >= maxcnt) {
+  if (a - sh2->poll_addr <= 2 && CYCLES_GE(20, cycles_diff)) {
+    if (CYCLES_GT(cycles_diff, 2) && ++sh2->poll_cnt >= maxcnt) {
       if (!(sh2->state & flags))
         elprintf_sh2(sh2, EL_32X, "state: %02x->%02x",
           sh2->state, sh2->state | flags);
@@ -2366,7 +2367,7 @@ void PicoMemSetup32x(void)
   msh2_read32_map[0x02/2].mask = msh2_read32_map[0x22/2].mask = 0x3ffffc; // FIXME
   msh2_write16_map[0x02/2] = msh2_write16_map[0x22/2] = sh2_write16_rom;
   msh2_write32_map[0x02/2] = msh2_write32_map[0x22/2] = sh2_write32_rom;
-  // CS2 - DRAM
+  // CS2 - DRAM 
   msh2_read8_map[0x04/2].mask  = msh2_read8_map[0x24/2].mask  = 0x01ffff;
   msh2_read16_map[0x04/2].mask = msh2_read16_map[0x24/2].mask = 0x01fffe;
   msh2_read32_map[0x04/2].mask = msh2_read32_map[0x24/2].mask = 0x01fffc;
