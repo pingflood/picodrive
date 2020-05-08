@@ -1,0 +1,10 @@
+Package: picodrive
+Version: 
+Description: RetroGame port of PicoDrive
+Section: emus
+Priority: optional
+Maintainer: pingflood
+Architecture: mipsel
+Homepage: https://github.com/pingflood/picodrive
+Depends:
+Source: https://github.com/pingflood/picodrive
