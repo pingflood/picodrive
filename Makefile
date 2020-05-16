@@ -91,14 +91,20 @@ ipk: all
 	@echo 2.0 > /tmp/.picodrive-ipk/debian-binary
 	@ar r picodrive/picodrive.ipk /tmp/.picodrive-ipk/control.tar.gz /tmp/.picodrive-ipk/data.tar.gz /tmp/.picodrive-ipk/debian-binary
 
-opk: $(TARGET).opk
-
-$(TARGET).opk: $(TARGET)
-	$(RM) -rf .opk_data
-	cp -r platform/opendingux/data .opk_data
-	cp $< .opk_data/PicoDrive
-	$(STRIP) .opk_data/PicoDrive
-	mksquashfs .opk_data $@ -all-root -noappend -no-exports -no-xattrs
+opk: all
+	@touch picodrive/picodrive.elf picodrive/picodrive.dge
+	@mksquashfs \
+	picodrive/default.gcw0.desktop \
+	picodrive/default.retrofw.desktop \
+	picodrive/megadrive.retrofw.desktop \
+	picodrive/segacd.retrofw.desktop \
+	picodrive/32x.retrofw.desktop \
+	picodrive/picodrive.elf \
+	picodrive/picodrive.dge \
+	picodrive/skin \
+	picodrive/picodrive.png \
+	picodrive/picodrive.opk \
+	-all-root -noappend -no-exports -no-xattrs
 
 OBJS += platform/opendingux/inputmap.o
 
@@ -231,6 +237,8 @@ endif
 target_: pico/pico_int_offs.h $(TARGET)
 
 clean:
+	$(RM) $(TARGET) $(OBJS)
+	$(RM) -r .opk_data picodrive/picodrive.ipk picodrive/picodrive.opk
 
 $(TARGET): $(OBJS)
 ifeq ($(STATIC_LINKING), 1)
