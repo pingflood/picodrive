@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=PicoDrive
+Comment=MegaDrive/Genesis Emulator
+Exec=picodrive.elf %f
+Icon=picodrive
+Categories=emulators;
+X-OD-Manual=picodrive.man.txt
+X-OD-Selector=/home/retrofw/roms/megadrive
+X-OD-Filter=.zip,.smd,.iso,.cue,.bin,.md,.gen,.sms,.gg,.sg
+Terminal=false
+StartupNotify=true

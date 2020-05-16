@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Mega Drive
+Comment=PicoDrive Emulator
+Exec=picodrive.dge %f
+Icon=picodrive
+Categories=emulators.systems;
+X-OD-Manual=picodrive.man.txt
+X-OD-Selector=/home/retrofw/roms/megadrive
+X-OD-Filter=.zip,.smd,.iso,.bin,.md,.gen
+Terminal=false
+StartupNotify=true
